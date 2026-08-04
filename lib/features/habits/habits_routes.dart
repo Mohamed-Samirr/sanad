@@ -1,0 +1,41 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'habits_injection.dart';
+import 'presentation/cubit/habits_cubit.dart';
+import 'presentation/pages/habit_detail_page.dart';
+import 'presentation/pages/habits_page.dart';
+
+/// Plug these into whatever router the app uses.
+class HabitsRoutes {
+  const HabitsRoutes._();
+
+  static const String list = '/habits';
+  static const String detail = '/habit-detail';
+
+  static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case list:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => sl<HabitsCubit>()
+              ..load()
+              ..listenToChanges(),
+            child: const HabitsPage(),
+          ),
+        );
+      case detail:
+        final habitId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => buildHabitDetailCubit(habitId)
+              ..load()
+              ..listenToChanges(),
+            child: const HabitDetailPage(),
+          ),
+        );
+      default:
+        return null;
+    }
+  }
+}
