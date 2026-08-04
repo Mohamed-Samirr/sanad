@@ -50,6 +50,38 @@ void main() {
       expect(Theme.of(context).textTheme.titleLarge?.fontSize, 17);
     });
 
+    testWidgets('the add button opens the habit form', (tester) async {
+      await tester.pumpWidget(const SanadApp());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      // Regression: /habit-form had no generator, so this threw
+      // "Could not find a generator for route".
+      expect(tester.takeException(), isNull);
+      expect(find.text('New habit'), findsOneWidget);
+      expect(find.text('What are you building?'), findsOneWidget);
+    });
+
+    testWidgets('the form refuses an unnamed habit instead of closing',
+        (tester) async {
+      await tester.pumpWidget(const SanadApp());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      // The app-bar action rather than the button at the foot of the form,
+      // which sits below the fold in the test viewport.
+      await tester.tap(find.widgetWithText(TextButton, 'Save'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Give the habit a name.'), findsOneWidget);
+      expect(find.text('New habit'), findsOneWidget,
+          reason: 'the form stays open so the error can be fixed');
+    });
+
     testWidgets('empty state survives 1.3x text scaling without overflow',
         (tester) async {
       await tester.pumpWidget(

@@ -8,6 +8,7 @@ import '../../../../core/widgets/empty_state.dart';
 import '../../domain_exports.dart';
 import '../cubit/habits_cubit.dart';
 import '../widgets/habit_check_button.dart';
+import '../widgets/habit_icon.dart';
 import '../widgets/streak_badge.dart';
 import '../widgets/time_of_day_pill.dart';
 
@@ -198,7 +199,7 @@ class _HabitRow extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   ),
                   child: Icon(
-                    IconData(habit.iconCodePoint, fontFamily: 'MaterialIcons'),
+                    HabitIcons.resolve(habit.iconCodePoint),
                     color: palette.habitInk(stored),
                     size: 20,
                   ),

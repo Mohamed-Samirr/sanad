@@ -13,7 +13,9 @@ import 'domain/usecases/get_habit_detail.dart';
 import 'domain/usecases/get_habit_summaries.dart';
 import 'domain/usecases/save_habit.dart';
 import 'domain/usecases/toggle_habit_log.dart';
+import 'domain_exports.dart';
 import 'presentation/cubit/habit_detail_cubit.dart';
+import 'presentation/cubit/habit_form_cubit.dart';
 import 'presentation/cubit/habits_cubit.dart';
 
 final sl = GetIt.instance;
@@ -55,6 +57,13 @@ Future<void> initHabitsFeature() async {
     ),
   );
 }
+
+/// The form cubit is seeded with the habit being edited, so it is built per
+/// route. A null [initial] means the form is creating.
+HabitFormCubit buildHabitFormCubit(Habit? initial) => HabitFormCubit(
+      saveHabit: sl(),
+      initial: initial,
+    );
 
 /// The detail cubit needs a habit id, so it is built per route.
 HabitDetailCubit buildHabitDetailCubit(String habitId) => HabitDetailCubit(
