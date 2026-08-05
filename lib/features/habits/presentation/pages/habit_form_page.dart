@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/errors/failures.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -39,34 +41,45 @@ class _HabitFormPageState extends State<HabitFormPage> {
     super.dispose();
   }
 
+  /// Inline field errors travel as codes, so the sentence is chosen here.
+  static String? _errorText(BuildContext context, String? code) {
+    if (code == null) return null;
+    return context.l10n.forFailure(ValidationFailure('', code: code));
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<HabitFormCubit, HabitFormState>(
       listenWhen: (previous, current) =>
           previous.status != current.status ||
-          previous.errorMessage != current.errorMessage,
+          previous.failure != current.failure,
       listener: (context, state) {
         if (state.status == HabitFormStatus.saved) {
           Navigator.of(context).pop(true);
           return;
         }
-        final message = state.errorMessage;
-        if (message != null) {
+        final failure = state.failure;
+        if (failure != null) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text(message)));
+            ..showSnackBar(
+              SnackBar(content: Text(context.l10n.forFailure(failure))),
+            );
         }
       },
       builder: (context, state) {
         final cubit = context.read<HabitFormCubit>();
+        final l10n = context.l10n;
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(state.isEditing ? 'Edit habit' : 'New habit'),
+            title: Text(
+              state.isEditing ? l10n.editHabitTitle : l10n.newHabitTitle,
+            ),
             actions: [
               TextButton(
                 onPressed: state.isSaving ? null : cubit.submit,
-                child: Text(state.isSaving ? 'Saving…' : 'Save'),
+                child: Text(state.isSaving ? l10n.saving : l10n.save),
               ),
               const SizedBox(width: AppSpacing.sm),
             ],
@@ -81,7 +94,7 @@ class _HabitFormPageState extends State<HabitFormPage> {
             children: [
               _NameField(
                 controller: _nameController,
-                errorText: state.nameError,
+                errorText: _errorText(context, state.nameErrorCode),
                 onChanged: cubit.setName,
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -96,7 +109,7 @@ class _HabitFormPageState extends State<HabitFormPage> {
                 scheduleType: state.scheduleType,
                 scheduledWeekdays: state.scheduledWeekdays,
                 timesPerWeek: state.timesPerWeek,
-                errorText: state.scheduleError,
+                errorText: _errorText(context, state.scheduleErrorCode),
                 onTypeChanged: cubit.setScheduleType,
                 onWeekdayToggled: cubit.toggleWeekday,
                 onTimesPerWeekChanged: cubit.setTimesPerWeek,
@@ -120,7 +133,7 @@ class _HabitFormPageState extends State<HabitFormPage> {
               FilledButton(
                 onPressed: state.isSaving ? null : cubit.submit,
                 child: Text(
-                  state.isEditing ? 'Save changes' : 'Start tracking',
+                  state.isEditing ? l10n.saveChanges : l10n.startTracking,
                 ),
               ),
             ],
@@ -144,8 +157,10 @@ class _NameField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return SectionCard(
-      title: 'What are you building?',
+      title: l10n.formNameSection,
       icon: Icons.edit_outlined,
       child: TextField(
         controller: controller,
@@ -153,7 +168,7 @@ class _NameField extends StatelessWidget {
         textInputAction: TextInputAction.next,
         textCapitalization: TextCapitalization.sentences,
         decoration: InputDecoration(
-          hintText: 'Morning walk',
+          hintText: l10n.formNameHint,
           errorText: errorText,
         ),
       ),
@@ -178,10 +193,11 @@ class _AppearanceSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
+    final l10n = context.l10n;
     final selected = AppColors.fromHex(colorHex);
 
     return SectionCard(
-      title: 'Icon and colour',
+      title: l10n.formAppearanceSection,
       icon: Icons.palette_outlined,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,7 +217,7 @@ class _AppearanceSection extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'Colour',
+            l10n.formColourLabel,
             style: text.labelMedium?.copyWith(color: palette.textSecondary),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -243,7 +259,7 @@ class _IconChoice extends StatelessWidget {
     return Semantics(
       button: true,
       selected: isSelected,
-      label: 'Habit icon',
+      label: context.l10n.formIconSemantics,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
@@ -287,7 +303,7 @@ class _ColorChoice extends StatelessWidget {
     return Semantics(
       button: true,
       selected: isSelected,
-      label: 'Habit colour',
+      label: context.l10n.formColourSemantics,
       child: GestureDetector(
         onTap: onTap,
         child: SizedBox(
@@ -338,18 +354,20 @@ class _ScheduleSection extends StatelessWidget {
   final ValueChanged<int> onWeekdayToggled;
   final ValueChanged<int> onTimesPerWeekChanged;
 
-  static const List<String> _weekdayLabels = [
-    'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',
-  ];
+  Widget _weekdayChip(AppLocalizations l10n, int weekday) => _ChoiceChip(
+        label: l10n.weekdayNamesShort[weekday - 1],
+        isSelected: scheduledWeekdays.contains(weekday),
+        onTap: () => onWeekdayToggled(weekday),
+      );
 
-  static String _labelFor(HabitScheduleType type) {
+  static String _labelFor(AppLocalizations l10n, HabitScheduleType type) {
     switch (type) {
       case HabitScheduleType.daily:
-        return 'Every day';
+        return l10n.scheduleDaily;
       case HabitScheduleType.weekdays:
-        return 'Certain days';
+        return l10n.scheduleWeekdays;
       case HabitScheduleType.timesPerWeek:
-        return 'Times a week';
+        return l10n.scheduleTimesPerWeek;
     }
   }
 
@@ -357,9 +375,10 @@ class _ScheduleSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
+    final l10n = context.l10n;
 
     return SectionCard(
-      title: 'How often?',
+      title: l10n.formScheduleSection,
       icon: Icons.event_repeat_rounded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,7 +389,7 @@ class _ScheduleSection extends StatelessWidget {
             children: [
               for (final type in HabitScheduleType.values)
                 _ChoiceChip(
-                  label: _labelFor(type),
+                  label: _labelFor(l10n, type),
                   isSelected: type == scheduleType,
                   onTap: () => onTypeChanged(type),
                 ),
@@ -382,11 +401,12 @@ class _ScheduleSection extends StatelessWidget {
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
               children: [
-                for (var weekday = 1; weekday <= 7; weekday++)
-                  _ChoiceChip(
-                    label: _weekdayLabels[weekday - 1],
-                    isSelected: scheduledWeekdays.contains(weekday),
-                    onTap: () => onWeekdayToggled(weekday),
+                // Ordered by the locale's own week start, so the Arabic form
+                // opens on Saturday the way the calendar does.
+                for (var i = 0; i < 7; i++)
+                  _weekdayChip(
+                    l10n,
+                    ((l10n.firstWeekday - 1 + i) % 7) + 1,
                   ),
               ],
             ),
@@ -401,8 +421,7 @@ class _ScheduleSection extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Any $timesPerWeek days that suit you. A day only counts against '
-              'you once the week can no longer reach the target.',
+              l10n.timesPerWeekExplain(timesPerWeek),
               style: text.bodySmall?.copyWith(color: palette.textSecondary),
             ),
           ],
@@ -428,7 +447,7 @@ class _TimeOfDaySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SectionCard(
-      title: 'When in the day?',
+      title: context.l10n.formTimeOfDaySection,
       icon: Icons.schedule_rounded,
       child: Wrap(
         spacing: AppSpacing.sm,
@@ -436,7 +455,7 @@ class _TimeOfDaySection extends StatelessWidget {
         children: [
           for (final slot in HabitTimeOfDay.values)
             _ChoiceChip(
-              label: TimeOfDayPill.labelFor(slot),
+              label: TimeOfDayPill.labelFor(context, slot),
               icon: TimeOfDayPill.iconFor(slot),
               isSelected: slot == selected,
               onTap: () => onChanged(slot),
@@ -470,6 +489,7 @@ class _DetailsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
+    final l10n = context.l10n;
 
     final reminder = reminderMinutes == null
         ? null
@@ -479,7 +499,7 @@ class _DetailsSection extends StatelessWidget {
           );
 
     return SectionCard(
-      title: 'Details',
+      title: l10n.formDetailsSection,
       icon: Icons.tune_rounded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -488,17 +508,17 @@ class _DetailsSection extends StatelessWidget {
             controller: noteController,
             onChanged: onNoteChanged,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              labelText: 'Target (optional)',
-              hintText: '30 minutes, 5 pages',
+            decoration: InputDecoration(
+              labelText: l10n.formTargetLabel,
+              hintText: l10n.formTargetHint,
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
           _Row(
             icon: Icons.notifications_none_rounded,
-            label: 'Reminder',
+            label: l10n.formReminderLabel,
             value: reminder == null
-                ? 'Off'
+                ? l10n.formReminderOff
                 : reminder.format(context),
             onTap: () async {
               final picked = await showTimePicker(
@@ -512,14 +532,14 @@ class _DetailsSection extends StatelessWidget {
                 : IconButton(
                     onPressed: () => onReminderChanged(null),
                     icon: const Icon(Icons.close_rounded),
-                    tooltip: 'Turn reminder off',
+                    tooltip: l10n.formTurnReminderOff,
                   ),
           ),
           const Divider(height: AppSpacing.xl),
           _Row(
             icon: Icons.play_circle_outline_rounded,
-            label: 'Start date',
-            value: AppDateUtils.shortDate(startDate),
+            label: l10n.formStartDateLabel,
+            value: l10n.shortDate(startDate),
             // Editing leaves the start date alone: the health curve is rebuilt
             // from this day, so moving it would rewrite history the user
             // already logged.
@@ -539,7 +559,7 @@ class _DetailsSection extends StatelessWidget {
           if (isEditing) ...[
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'The start date stays put so your logged history keeps its shape.',
+              l10n.formStartDateLockedNote,
               style: text.bodySmall?.copyWith(color: palette.textSecondary),
             ),
           ],
@@ -672,23 +692,24 @@ class _Stepper extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
+    final l10n = context.l10n;
 
     return Row(
       children: [
         IconButton.outlined(
           onPressed: value > min ? () => onChanged(value - 1) : null,
           icon: const Icon(Icons.remove_rounded),
-          tooltip: 'Fewer days',
+          tooltip: l10n.fewerDays,
         ),
         Expanded(
           child: Semantics(
-            label: '$value times a week',
+            label: '$value ${l10n.daysPerWeekLabel(value)}',
             excludeSemantics: true,
             child: Column(
               children: [
                 Text('$value', style: text.displaySmall),
                 Text(
-                  value == 1 ? 'day a week' : 'days a week',
+                  l10n.daysPerWeekLabel(value),
                   style: text.bodySmall?.copyWith(
                     color: palette.textSecondary,
                   ),
@@ -700,7 +721,7 @@ class _Stepper extends StatelessWidget {
         IconButton.outlined(
           onPressed: value < max ? () => onChanged(value + 1) : null,
           icon: const Icon(Icons.add_rounded),
-          tooltip: 'More days',
+          tooltip: l10n.moreDays,
         ),
       ],
     );

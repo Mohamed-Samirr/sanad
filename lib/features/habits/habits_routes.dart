@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'domain_exports.dart';
 import 'habits_injection.dart';
 import 'presentation/cubit/habits_cubit.dart';
+import 'presentation/pages/archived_habits_page.dart';
 import 'presentation/pages/habit_detail_page.dart';
 import 'presentation/pages/habit_form_page.dart';
 import 'presentation/pages/habits_page.dart';
@@ -15,6 +16,7 @@ class HabitsRoutes {
   static const String list = '/habits';
   static const String detail = '/habit-detail';
   static const String form = '/habit-form';
+  static const String archived = '/archived-habits';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -46,6 +48,15 @@ class HabitsRoutes {
             child: const HabitFormPage(),
           ),
           fullscreenDialog: true,
+        );
+      case archived:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => buildArchivedHabitsCubit()
+              ..load()
+              ..listenToChanges(),
+            child: const ArchivedHabitsPage(),
+          ),
         );
       default:
         return null;

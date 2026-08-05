@@ -88,6 +88,23 @@ class HabitRepositoryImpl implements HabitRepository {
   }
 
   @override
+  Future<Either<Failure, Unit>> restoreHabit(String id) async {
+    try {
+      final habit = localDataSource.getHabitById(id).toEntity();
+      await localDataSource.putHabit(
+        HabitModel.fromEntity(habit.copyWith(isArchived: false)),
+      );
+      return const Right(unit);
+    } on NotFoundException {
+      return const Left(NotFoundFailure());
+    } on CacheException {
+      return const Left(CacheFailure());
+    } catch (_) {
+      return const Left(UnexpectedFailure());
+    }
+  }
+
+  @override
   Future<Either<Failure, List<HabitLog>>> getLogsForHabit(String habitId) async {
     try {
       final logs = localDataSource

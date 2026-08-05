@@ -4,10 +4,13 @@ enum HabitFormStatus { editing, saving, saved, failure }
 
 /// Form state for creating or editing a habit.
 ///
-/// Field errors are separate from [errorMessage]: the first two belong beside
-/// the input that caused them, the last is for a failure the user cannot fix
+/// Field errors are separate from [failure]: the first two belong beside the
+/// input that caused them, the last is for something the user cannot fix
 /// inline (storage, mostly). All three clear unless explicitly passed, so a
 /// message is shown once and does not stick to the next keystroke.
+///
+/// Errors are held as codes and failures rather than sentences — the widget
+/// picks the wording, because only it knows the locale.
 class HabitFormState {
   final HabitFormStatus status;
 
@@ -29,9 +32,9 @@ class HabitFormState {
 
   final DateTime startDate;
 
-  final String? nameError;
-  final String? scheduleError;
-  final String? errorMessage;
+  final String? nameErrorCode;
+  final String? scheduleErrorCode;
+  final Failure? failure;
 
   const HabitFormState({
     required this.startDate,
@@ -46,9 +49,9 @@ class HabitFormState {
     this.timesPerWeek = 3,
     this.targetNote = '',
     this.reminderMinutes,
-    this.nameError,
-    this.scheduleError,
-    this.errorMessage,
+    this.nameErrorCode,
+    this.scheduleErrorCode,
+    this.failure,
   });
 
   bool get isEditing => id != null;
@@ -67,9 +70,9 @@ class HabitFormState {
     String? targetNote,
     int? reminderMinutes,
     DateTime? startDate,
-    String? nameError,
-    String? scheduleError,
-    String? errorMessage,
+    String? nameErrorCode,
+    String? scheduleErrorCode,
+    Failure? failure,
     bool clearReminder = false,
   }) {
     return HabitFormState(
@@ -86,9 +89,9 @@ class HabitFormState {
       reminderMinutes:
           clearReminder ? null : (reminderMinutes ?? this.reminderMinutes),
       startDate: startDate ?? this.startDate,
-      nameError: nameError,
-      scheduleError: scheduleError,
-      errorMessage: errorMessage,
+      nameErrorCode: nameErrorCode,
+      scheduleErrorCode: scheduleErrorCode,
+      failure: failure,
     );
   }
 }

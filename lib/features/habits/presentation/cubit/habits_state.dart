@@ -5,12 +5,14 @@ enum HabitsStatus { initial, loading, success, failure }
 class HabitsState {
   final HabitsStatus status;
   final List<HabitSummary> habits;
-  final String? errorMessage;
+  /// The failure itself, not a sentence — the domain has no locale, so the
+  /// wording is chosen by the widget that displays it.
+  final Failure? failure;
 
   const HabitsState({
     this.status = HabitsStatus.initial,
     this.habits = const [],
-    this.errorMessage,
+    this.failure,
   });
 
   List<HabitSummary> byTimeOfDay(HabitTimeOfDay slot) =>
@@ -24,12 +26,12 @@ class HabitsState {
   HabitsState copyWith({
     HabitsStatus? status,
     List<HabitSummary>? habits,
-    String? errorMessage,
+    Failure? failure,
   }) {
     return HabitsState(
       status: status ?? this.status,
       habits: habits ?? this.habits,
-      errorMessage: errorMessage,
+      failure: failure,
     );
   }
 }

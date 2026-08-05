@@ -29,7 +29,10 @@ class ToggleHabitLog implements UseCase<Unit, ToggleHabitLogParams> {
   Future<Either<Failure, Unit>> call(ToggleHabitLogParams params) {
     if (params.date.isAfter(DateTime.now())) {
       return Future.value(
-        const Left(ValidationFailure('You cannot log a day that has not happened yet.')),
+        const Left(ValidationFailure(
+          'You cannot log a day that has not happened yet.',
+          code: FailureCode.futureDay,
+        )),
       );
     }
 

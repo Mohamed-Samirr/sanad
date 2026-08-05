@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/app_palette.dart';
 
 class HabitCheckButton extends StatelessWidget {
@@ -28,7 +29,7 @@ class HabitCheckButton extends StatelessWidget {
     return Semantics(
       button: true,
       selected: isDone,
-      label: isDone ? 'Done today' : 'Mark done',
+      label: isDone ? context.l10n.checkDoneToday : context.l10n.checkMarkDone,
       child: GestureDetector(
         onTap: () {
           HapticFeedback.mediumImpact();

@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../domain/repositories/habit_repository.dart';
+import '../../domain/usecases/clear_habit_log.dart';
 import '../../domain/usecases/delete_habit.dart';
 import '../../domain/usecases/get_habit_detail.dart';
-import '../../domain/usecases/toggle_habit_log.dart';
+import '../../domain/usecases/set_habit_log.dart';
 import '../../domain_exports.dart';
 
 part 'habit_detail_state.dart';
@@ -14,7 +16,8 @@ part 'habit_detail_state.dart';
 class HabitDetailCubit extends Cubit<HabitDetailState> {
   final String habitId;
   final GetHabitDetail getHabitDetail;
-  final ToggleHabitLog toggleHabitLog;
+  final SetHabitLog setHabitLog;
+  final ClearHabitLog clearHabitLog;
   final DeleteHabit deleteHabit;
   final ArchiveHabit archiveHabit;
   final HabitRepository repository;
@@ -24,7 +27,8 @@ class HabitDetailCubit extends Cubit<HabitDetailState> {
   HabitDetailCubit({
     required this.habitId,
     required this.getHabitDetail,
-    required this.toggleHabitLog,
+    required this.setHabitLog,
+    required this.clearHabitLog,
     required this.deleteHabit,
     required this.archiveHabit,
     required this.repository,
@@ -40,7 +44,7 @@ class HabitDetailCubit extends Cubit<HabitDetailState> {
     result.fold(
       (failure) => emit(state.copyWith(
         status: HabitDetailStatus.failure,
-        errorMessage: failure.message,
+        failure: failure,
       )),
       (detail) => emit(state.copyWith(
         status: HabitDetailStatus.success,
@@ -75,23 +79,40 @@ class HabitDetailCubit extends Cubit<HabitDetailState> {
     emit(state.copyWith(focusedMonth: next));
   }
 
-  /// Log or un-log any past day straight from the calendar.
-  Future<void> toggleDay(DateTime date) async {
-    final key = AppDateUtils.dayKey(date);
-    final isDone = state.logsByDay[key]?.isDone ?? false;
-
-    final result = await toggleHabitLog(
-      ToggleHabitLogParams(
+  /// Records a deliberate outcome for [date], with an optional note.
+  Future<void> setDay(
+    DateTime date, {
+    required HabitLogStatus status,
+    String? note,
+  }) async {
+    final result = await setHabitLog(
+      SetHabitLogParams(
         habitId: habitId,
         date: date,
-        isCurrentlyDone: isDone,
+        status: status,
+        note: note,
       ),
     );
 
     await result.fold(
       (failure) async => emit(state.copyWith(
         status: HabitDetailStatus.success,
-        errorMessage: failure.message,
+        failure: failure,
+      )),
+      (_) => load(showLoader: false),
+    );
+  }
+
+  /// Returns [date] to having no entry at all.
+  Future<void> clearDay(DateTime date) async {
+    final result = await clearHabitLog(
+      ClearHabitLogParams(habitId: habitId, date: date),
+    );
+
+    await result.fold(
+      (failure) async => emit(state.copyWith(
+        status: HabitDetailStatus.success,
+        failure: failure,
       )),
       (_) => load(showLoader: false),
     );
@@ -104,7 +125,7 @@ class HabitDetailCubit extends Cubit<HabitDetailState> {
     result.fold(
       (failure) => emit(state.copyWith(
         status: HabitDetailStatus.failure,
-        errorMessage: failure.message,
+        failure: failure,
       )),
       (_) => emit(state.copyWith(status: HabitDetailStatus.deleted)),
     );

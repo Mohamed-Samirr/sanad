@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../settings/settings_routes.dart';
 import '../../domain_exports.dart';
 import '../cubit/habits_cubit.dart';
 import '../widgets/habit_check_button.dart';
@@ -17,13 +19,24 @@ class HabitsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Habits'),
+        title: Text(l10n.habitsTitle),
+        actions: [
+          IconButton(
+            onPressed: () =>
+                Navigator.of(context).pushNamed(SettingsRoutes.settings),
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: l10n.settingsTooltip,
+          ),
+          const SizedBox(width: AppSpacing.xs),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.of(context).pushNamed('/habit-form'),
-        tooltip: 'Add a habit',
+        tooltip: l10n.addHabit,
         child: const Icon(Icons.add_rounded),
       ),
       body: BlocBuilder<HabitsCubit, HabitsState>(
@@ -36,11 +49,9 @@ class HabitsPage extends StatelessWidget {
           if (state.habits.isEmpty) {
             return EmptyState(
               icon: Icons.bolt_rounded,
-              title: 'No habits yet',
-              message:
-                  'Start with one small action you can repeat tomorrow. You '
-                  'can promote any toolbox action into a tracked habit.',
-              actionLabel: 'Add a habit',
+              title: l10n.noHabitsTitle,
+              message: l10n.noHabitsMessage,
+              actionLabel: l10n.addHabit,
               onAction: () => Navigator.of(context).pushNamed('/habit-form'),
             );
           }
@@ -76,13 +87,14 @@ class _TodaySummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
+    final l10n = context.l10n;
     final progress = due == 0 ? 0.0 : done / due;
     final animate = !MediaQuery.disableAnimationsOf(context);
 
     return Semantics(
       label: due == 0
-          ? 'Nothing scheduled today'
-          : '$done of $due habits done today',
+          ? l10n.nothingScheduledToday
+          : l10n.doneOfDueTodaySemantics(done, due),
       excludeSemantics: true,
       child: Row(
         children: [
@@ -110,8 +122,8 @@ class _TodaySummary extends StatelessWidget {
           Expanded(
             child: Text(
               due == 0
-                  ? 'Nothing scheduled today.'
-                  : '$done of $due done today',
+                  ? l10n.nothingScheduledToday
+                  : l10n.doneOfDueToday(done, due),
               style: text.titleMedium,
             ),
           ),
@@ -149,7 +161,7 @@ class _TimeGroup extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.sm),
               Text(
-                TimeOfDayPill.labelFor(slot).toUpperCase(),
+                TimeOfDayPill.labelFor(context, slot).toUpperCase(),
                 style: text.labelMedium?.copyWith(
                   color: palette.textSecondary,
                 ),
@@ -167,6 +179,76 @@ class _HabitRow extends StatelessWidget {
   const _HabitRow({required this.summary});
 
   final HabitSummary summary;
+
+  /// Long-press shortcuts, so skipping or editing does not require opening
+  /// the detail screen first.
+  Future<void> _showRowMenu(BuildContext context) async {
+    final cubit = context.read<HabitsCubit>();
+    final navigator = Navigator.of(context);
+    final l10n = context.l10n;
+    final habit = summary.habit;
+    final hasTodayLog = summary.todayLog != null;
+
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.lg,
+                AppSpacing.xl,
+                AppSpacing.sm,
+              ),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  habit.name,
+                  style: Theme.of(sheetContext).textTheme.titleLarge,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.pause_circle_outline_rounded),
+              title: Text(l10n.skipToday),
+              subtitle: Text(l10n.skipTodayDescription),
+              onTap: () => Navigator.of(sheetContext).pop('skip'),
+            ),
+            if (hasTodayLog)
+              ListTile(
+                leading: const Icon(Icons.remove_circle_outline_rounded),
+                title: Text(l10n.clearTodayEntry),
+                onTap: () => Navigator.of(sheetContext).pop('clear'),
+              ),
+            ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: Text(l10n.editHabit),
+              onTap: () => Navigator.of(sheetContext).pop('edit'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.insights_rounded),
+              title: Text(l10n.openDetails),
+              onTap: () => Navigator.of(sheetContext).pop('detail'),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+        ),
+      ),
+    );
+
+    switch (choice) {
+      case 'skip':
+        await cubit.skipToday(summary);
+      case 'clear':
+        await cubit.clearToday(summary);
+      case 'edit':
+        await navigator.pushNamed('/habit-form', arguments: habit);
+      case 'detail':
+        await navigator.pushNamed('/habit-detail', arguments: habit.id);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -187,6 +269,7 @@ class _HabitRow extends StatelessWidget {
             '/habit-detail',
             arguments: habit.id,
           ),
+          onLongPress: () => _showRowMenu(context),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Row(

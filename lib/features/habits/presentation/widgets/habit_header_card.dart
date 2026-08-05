@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/utils/date_utils.dart';
 import '../../../../core/widgets/section_card.dart';
 import '../../domain_exports.dart';
 import 'animated_progress_bar.dart';
@@ -24,6 +24,7 @@ class HabitHeaderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
+    final l10n = context.l10n;
 
     return SectionCard(
       child: Column(
@@ -35,7 +36,7 @@ class HabitHeaderCard extends StatelessWidget {
               const Spacer(),
               Flexible(
                 child: Text(
-                  'Since ${AppDateUtils.shortDate(habit.startDate)}',
+                  l10n.sinceDate(l10n.shortDate(habit.startDate)),
                   textAlign: TextAlign.end,
                   style: text.bodyLarge?.copyWith(
                     color: palette.textSecondary,

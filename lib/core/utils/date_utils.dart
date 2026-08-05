@@ -36,22 +36,7 @@ class AppDateUtils {
   static int daysBetween(DateTime from, DateTime to) =>
       startOfDay(to).difference(startOfDay(from)).inDays;
 
-  static const List<String> shortMonths = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-
-  static const List<String> fullMonths = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-  ];
-
-  static String shortDate(DateTime date) =>
-      '${date.day} ${shortMonths[date.month - 1]} ${date.year}';
-
-  static String monthTitle(DateTime date) =>
-      '${fullMonths[date.month - 1]} ${date.year}';
-
-  /// `3/7` style label used on the trend chart axis.
-  static String compactDate(DateTime date) => '${date.day}/${date.month}';
+  // Date *formatting* deliberately lives in AppLocalizations, not here: month
+  // and weekday names differ per locale, and keeping a second English-only
+  // copy in core would guarantee the two drift.
 }

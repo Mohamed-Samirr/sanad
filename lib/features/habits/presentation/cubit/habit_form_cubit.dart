@@ -4,6 +4,8 @@ import 'package:uuid/uuid.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/date_utils.dart';
+import '../../../../core/usecase/usecase.dart';
+import '../../domain/usecases/request_reminder_permission.dart';
 import '../../domain/usecases/save_habit.dart';
 import '../../domain_exports.dart';
 
@@ -18,12 +20,16 @@ part 'habit_form_state.dart';
 /// be carried deliberately, which is why [_initial] is kept around.
 class HabitFormCubit extends Cubit<HabitFormState> {
   final SaveHabit saveHabit;
+  final RequestReminderPermission requestReminderPermission;
 
   /// The habit being edited, or null when creating.
   final Habit? _initial;
 
-  HabitFormCubit({required this.saveHabit, Habit? initial})
-      : _initial = initial,
+  HabitFormCubit({
+    required this.saveHabit,
+    required this.requestReminderPermission,
+    Habit? initial,
+  })  : _initial = initial,
         super(
           initial == null
               ? HabitFormState(
@@ -69,12 +75,38 @@ class HabitFormCubit extends Cubit<HabitFormState> {
 
   void setTargetNote(String value) => emit(state.copyWith(targetNote: value));
 
-  void setReminder(TimeOfDay? time) {
+  /// Setting a time is the moment the permission prompt has an obvious reason
+  /// attached to it, so that is when it is asked for — not at launch.
+  ///
+  /// If the user declines, the reminder is not kept: a stored time that can
+  /// never fire would be a promise the app cannot keep.
+  Future<void> setReminder(TimeOfDay? time) async {
     if (time == null) {
       emit(state.copyWith(clearReminder: true));
       return;
     }
-    emit(state.copyWith(reminderMinutes: time.hour * 60 + time.minute));
+
+    final result = await requestReminderPermission(const NoParams());
+
+    result.fold(
+      (failure) => emit(state.copyWith(
+        clearReminder: true,
+        failure: failure,
+      )),
+      (granted) {
+        if (!granted) {
+          emit(state.copyWith(
+            clearReminder: true,
+            failure: const ValidationFailure(
+              'Reminders need notification permission.',
+              code: FailureCode.reminderPermissionDenied,
+            ),
+          ));
+          return;
+        }
+        emit(state.copyWith(reminderMinutes: time.hour * 60 + time.minute));
+      },
+    );
   }
 
   /// A habit cannot begin in the future — there would be nothing to log.
@@ -91,23 +123,23 @@ class HabitFormCubit extends Cubit<HabitFormState> {
 
     // Mirrors SaveHabit's rules so the message lands beside the field that
     // caused it. SaveHabit stays the authority — see the fallback below.
-    final nameError =
-        state.name.trim().isEmpty ? 'Give the habit a name.' : null;
+    final nameErrorCode =
+        state.name.trim().isEmpty ? FailureCode.nameRequired : null;
 
-    String? scheduleError;
+    String? scheduleErrorCode;
     if (state.scheduleType == HabitScheduleType.weekdays &&
         state.scheduledWeekdays.isEmpty) {
-      scheduleError = 'Pick at least one day of the week.';
+      scheduleErrorCode = FailureCode.weekdayRequired;
     } else if (state.scheduleType == HabitScheduleType.timesPerWeek &&
         (state.timesPerWeek < 1 || state.timesPerWeek > 7)) {
-      scheduleError = 'Set a weekly target between 1 and 7.';
+      scheduleErrorCode = FailureCode.weeklyTargetRange;
     }
 
-    if (nameError != null || scheduleError != null) {
+    if (nameErrorCode != null || scheduleErrorCode != null) {
       emit(state.copyWith(
         status: HabitFormStatus.editing,
-        nameError: nameError,
-        scheduleError: scheduleError,
+        nameErrorCode: nameErrorCode,
+        scheduleErrorCode: scheduleErrorCode,
       ));
       return;
     }
@@ -120,9 +152,8 @@ class HabitFormCubit extends Cubit<HabitFormState> {
       (failure) => emit(state.copyWith(
         status: HabitFormStatus.failure,
         // A ValidationFailure here means the local mirror missed a rule, so
-        // it is shown as-is rather than guessed onto a field.
-        errorMessage: failure.message,
-        nameError: failure is ValidationFailure ? state.nameError : null,
+        // it is surfaced whole rather than guessed onto a field.
+        failure: failure,
       )),
       (_) => emit(state.copyWith(status: HabitFormStatus.saved)),
     );

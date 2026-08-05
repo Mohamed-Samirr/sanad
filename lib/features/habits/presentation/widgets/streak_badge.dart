@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_spacing.dart';
 
@@ -16,7 +17,7 @@ class StreakBadge extends StatelessWidget {
     final text = Theme.of(context).textTheme;
 
     return Semantics(
-      label: '$streak day streak',
+      label: context.l10n.streakSemantics(streak),
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm,

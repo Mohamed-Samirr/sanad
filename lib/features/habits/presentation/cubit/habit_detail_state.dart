@@ -8,7 +8,7 @@ class HabitDetailState {
   final HabitStats? stats;
   final Map<String, HabitLog> logsByDay;
   final DateTime focusedMonth;
-  final String? errorMessage;
+  final Failure? failure;
 
   HabitDetailState({
     this.status = HabitDetailStatus.initial,
@@ -16,8 +16,17 @@ class HabitDetailState {
     this.stats,
     this.logsByDay = const {},
     DateTime? focusedMonth,
-    this.errorMessage,
+    this.failure,
   }) : focusedMonth = focusedMonth ?? AppDateUtils.startOfMonth(DateTime.now());
+
+  /// Logged days, newest first. Only days the user actually recorded appear —
+  /// misses are absent by design, so this reads as a history of choices made
+  /// rather than a ledger of failures.
+  List<HabitLog> get recentLogs {
+    final logs = logsByDay.values.toList();
+    logs.sort((a, b) => b.date.compareTo(a.date));
+    return logs;
+  }
 
   HabitDetailState copyWith({
     HabitDetailStatus? status,
@@ -25,7 +34,7 @@ class HabitDetailState {
     HabitStats? stats,
     Map<String, HabitLog>? logsByDay,
     DateTime? focusedMonth,
-    String? errorMessage,
+    Failure? failure,
   }) {
     return HabitDetailState(
       status: status ?? this.status,
@@ -33,7 +42,7 @@ class HabitDetailState {
       stats: stats ?? this.stats,
       logsByDay: logsByDay ?? this.logsByDay,
       focusedMonth: focusedMonth ?? this.focusedMonth,
-      errorMessage: errorMessage,
+      failure: failure,
     );
   }
 }

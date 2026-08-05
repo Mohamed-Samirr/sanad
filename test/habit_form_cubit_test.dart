@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sanad/core/errors/failures.dart';
 import 'package:sanad/core/utils/date_utils.dart';
 import 'package:sanad/features/habits/domain/repositories/habit_repository.dart';
+import 'package:sanad/features/habits/domain/services/habit_reminder_scheduler.dart';
+import 'package:sanad/features/habits/domain/usecases/request_reminder_permission.dart';
 import 'package:sanad/features/habits/domain/usecases/save_habit.dart';
 import 'package:sanad/features/habits/domain_exports.dart';
 import 'package:sanad/features/habits/presentation/cubit/habit_form_cubit.dart';
@@ -27,17 +29,43 @@ class _CapturingRepository implements HabitRepository {
       throw UnimplementedError('${invocation.memberName} is not used here');
 }
 
+/// Grants by default; flip [granted] to exercise a refusal.
+class _FakeScheduler implements HabitReminderScheduler {
+  bool granted = true;
+  bool asked = false;
+
+  @override
+  Future<bool> ensurePermission() async {
+    asked = true;
+    return granted;
+  }
+
+  @override
+  Future<bool> hasPermission() async => granted;
+
+  @override
+  Future<void> syncReminders(List<HabitReminder> reminders) async {}
+
+  @override
+  Future<void> cancelAll() async {}
+}
+
 void main() {
   late _CapturingRepository repository;
   late SaveHabit saveHabit;
+  late _FakeScheduler scheduler;
 
   setUp(() {
     repository = _CapturingRepository();
     saveHabit = SaveHabit(repository);
+    scheduler = _FakeScheduler();
   });
 
-  HabitFormCubit build({Habit? initial}) =>
-      HabitFormCubit(saveHabit: saveHabit, initial: initial);
+  HabitFormCubit build({Habit? initial}) => HabitFormCubit(
+        saveHabit: saveHabit,
+        requestReminderPermission: RequestReminderPermission(scheduler),
+        initial: initial,
+      );
 
   Habit existingHabit() => Habit(
         id: 'habit-1',
@@ -73,7 +101,7 @@ void main() {
 
       await cubit.submit();
 
-      expect(cubit.state.nameError, 'Give the habit a name.');
+      expect(cubit.state.nameErrorCode, FailureCode.nameRequired);
       expect(cubit.state.status, HabitFormStatus.editing);
       expect(repository.saved, isNull);
     });
@@ -85,7 +113,7 @@ void main() {
 
       await cubit.submit();
 
-      expect(cubit.state.scheduleError, 'Pick at least one day of the week.');
+      expect(cubit.state.scheduleErrorCode, FailureCode.weekdayRequired);
       expect(repository.saved, isNull);
     });
 
@@ -96,9 +124,11 @@ void main() {
         ..toggleWeekday(3)
         ..toggleWeekday(1)
         ..setTimeOfDay(HabitTimeOfDay.evening)
-        ..setTargetNote('  20 minutes  ')
-        ..setReminder(const TimeOfDay(hour: 7, minute: 30));
+        ..setTargetNote('  20 minutes  ');
 
+      // Awaited separately: setting a reminder asks the OS for permission, so
+      // it is async and a cascade would race the save.
+      await cubit.setReminder(const TimeOfDay(hour: 7, minute: 30));
       await cubit.submit();
 
       final saved = repository.saved!;
@@ -190,7 +220,7 @@ void main() {
       );
       expect(cubit.state.reminderMinutes, 480);
 
-      cubit.setReminder(null);
+      await cubit.setReminder(null);
       await cubit.submit();
 
       expect(repository.saved!.reminderMinutes, isNull);
@@ -223,6 +253,49 @@ void main() {
     });
   });
 
+  group('reminders', () {
+    test('asks for permission only when a time is actually set', () async {
+      final cubit = build();
+      expect(scheduler.asked, isFalse, reason: 'never prompt on open');
+
+      await cubit.setReminder(const TimeOfDay(hour: 7, minute: 0));
+
+      expect(scheduler.asked, isTrue);
+      expect(cubit.state.reminderMinutes, 7 * 60);
+    });
+
+    test('clearing a reminder does not prompt', () async {
+      final cubit = build();
+
+      await cubit.setReminder(null);
+
+      expect(scheduler.asked, isFalse);
+      expect(cubit.state.reminderMinutes, isNull);
+    });
+
+    test('a refused permission leaves no reminder behind', () async {
+      scheduler.granted = false;
+      final cubit = build();
+
+      await cubit.setReminder(const TimeOfDay(hour: 7, minute: 0));
+
+      expect(cubit.state.reminderMinutes, isNull,
+          reason: 'a stored time that can never fire is a broken promise');
+      expect(cubit.state.failure, isNotNull);
+    });
+
+    test('a refused permission still lets the habit be saved', () async {
+      scheduler.granted = false;
+      final cubit = build()..setName('Walk');
+
+      await cubit.setReminder(const TimeOfDay(hour: 7, minute: 0));
+      await cubit.submit();
+
+      expect(repository.saved, isNotNull);
+      expect(repository.saved!.reminderMinutes, isNull);
+    });
+  });
+
   group('icon catalogue', () {
     test('the default icon is one the picker can actually show', () {
       // If these drift apart, a new habit opens the form with nothing
@@ -252,7 +325,7 @@ void main() {
       await cubit.submit();
 
       expect(cubit.state.status, HabitFormStatus.failure);
-      expect(cubit.state.errorMessage, const CacheFailure().message);
+      expect(cubit.state.failure, const CacheFailure());
     });
 
     test('a ValidationFailure from SaveHabit is surfaced, not swallowed',
@@ -262,17 +335,17 @@ void main() {
 
       await cubit.submit();
 
-      expect(cubit.state.errorMessage, 'Something is off.');
+      expect(cubit.state.failure?.message, 'Something is off.');
     });
 
     test('the error clears on the next edit so it shows once', () async {
       repository.failure = const CacheFailure();
       final cubit = build()..setName('Walk');
       await cubit.submit();
-      expect(cubit.state.errorMessage, isNotNull);
+      expect(cubit.state.failure, isNotNull);
 
       cubit.setName('Walk more');
-      expect(cubit.state.errorMessage, isNull);
+      expect(cubit.state.failure, isNull);
     });
   });
 }

@@ -14,13 +14,19 @@ class SaveHabit implements UseCase<Unit, Habit> {
   Future<Either<Failure, Unit>> call(Habit habit) {
     if (habit.name.trim().isEmpty) {
       return Future.value(
-        const Left(ValidationFailure('Give the habit a name.')),
+        const Left(ValidationFailure(
+          'Give the habit a name.',
+          code: FailureCode.nameRequired,
+        )),
       );
     }
     if (habit.scheduleType == HabitScheduleType.weekdays &&
         habit.scheduledWeekdays.isEmpty) {
       return Future.value(
-        const Left(ValidationFailure('Pick at least one day of the week.')),
+        const Left(ValidationFailure(
+          'Pick at least one day of the week.',
+          code: FailureCode.weekdayRequired,
+        )),
       );
     }
     if (habit.scheduleType == HabitScheduleType.timesPerWeek &&
@@ -28,7 +34,10 @@ class SaveHabit implements UseCase<Unit, Habit> {
             habit.timesPerWeek! < 1 ||
             habit.timesPerWeek! > 7)) {
       return Future.value(
-        const Left(ValidationFailure('Set a weekly target between 1 and 7.')),
+        const Left(ValidationFailure(
+          'Set a weekly target between 1 and 7.',
+          code: FailureCode.weeklyTargetRange,
+        )),
       );
     }
     return repository.saveHabit(habit);

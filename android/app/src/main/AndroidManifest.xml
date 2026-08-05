@@ -1,4 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Habit reminders. Android 13+ prompts for this, and the app only asks
+         when the user sets their first reminder — never at launch.
+
+         SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM are deliberately NOT declared:
+         reminders are scheduled inexactly, which needs no special permission
+         and no Play Store justification. A habit nudge does not need
+         to-the-second delivery. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <!-- Pending alarms are dropped on reboot, so the plugin's receiver
+         restores them. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
     <application
         android:label="sanad"
         android:name="${applicationName}"
@@ -25,6 +38,23 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- flutter_local_notifications: re-registers scheduled reminders
+             after a reboot or an app update, which otherwise clear the
+             alarm queue. -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../domain_exports.dart';
@@ -22,16 +23,17 @@ class TimeOfDayPill extends StatelessWidget {
     }
   }
 
-  static String labelFor(HabitTimeOfDay slot) {
+  static String labelFor(BuildContext context, HabitTimeOfDay slot) {
+    final l10n = context.l10n;
     switch (slot) {
       case HabitTimeOfDay.morning:
-        return 'Morning';
+        return l10n.timeOfDayMorning;
       case HabitTimeOfDay.afternoon:
-        return 'Afternoon';
+        return l10n.timeOfDayAfternoon;
       case HabitTimeOfDay.evening:
-        return 'Evening';
+        return l10n.timeOfDayEvening;
       case HabitTimeOfDay.anytime:
-        return 'Anytime';
+        return l10n.timeOfDayAnytime;
     }
   }
 
@@ -54,7 +56,7 @@ class TimeOfDayPill extends StatelessWidget {
         children: [
           Icon(iconFor(timeOfDay), size: 18, color: palette.accent),
           const SizedBox(width: AppSpacing.sm),
-          Text(labelFor(timeOfDay), style: text.titleSmall),
+          Text(labelFor(context, timeOfDay), style: text.titleSmall),
         ],
       ),
     );

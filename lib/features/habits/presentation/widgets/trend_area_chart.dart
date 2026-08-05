@@ -1,8 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/app_palette.dart';
-import '../../../../core/utils/date_utils.dart';
 import '../../domain_exports.dart';
 
 /// The health-score curve. Dots appear only on days the habit was completed,
@@ -25,6 +25,7 @@ class TrendAreaChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
+    final l10n = context.l10n;
 
     // The line is a foreground mark, so it uses the readable ink rather than
     // the stored pastel — on a light ground the pastel sits near 2:1.
@@ -97,7 +98,7 @@ class TrendAreaChart extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      AppDateUtils.compactDate(points[index].date),
+                      l10n.compactDate(points[index].date),
                       style: axisStyle,
                     ),
                   );
@@ -116,7 +117,7 @@ class TrendAreaChart extends StatelessWidget {
                   show: true,
                   alignment: Alignment.topRight,
                   padding: const EdgeInsets.only(right: 2, bottom: 2),
-                  labelResolver: (_) => 'check-in',
+                  labelResolver: (_) => l10n.chartRiskLabel,
                   style: text.labelSmall?.copyWith(color: palette.caution),
                 ),
               ),
@@ -129,9 +130,10 @@ class TrendAreaChart extends StatelessWidget {
               getTooltipItems: (touchedSpots) {
                 return touchedSpots.map((spot) {
                   final point = points[spot.x.toInt()];
-                  final status = point.completed ? 'Done' : 'Missed';
+                  final status =
+                      point.completed ? l10n.legendDone : l10n.legendMissed;
                   return LineTooltipItem(
-                    '${AppDateUtils.compactDate(point.date)}  ·  '
+                    '${l10n.compactDate(point.date)}  ·  '
                     '${point.score.round()}\n$status',
                     text.labelSmall?.copyWith(color: palette.textPrimary) ??
                         const TextStyle(),

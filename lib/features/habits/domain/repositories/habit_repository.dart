@@ -15,6 +15,9 @@ abstract class HabitRepository {
 
   Future<Either<Failure, Unit>> archiveHabit(String id);
 
+  /// Reverses [archiveHabit]. The logs are untouched by either.
+  Future<Either<Failure, Unit>> restoreHabit(String id);
+
   Future<Either<Failure, List<HabitLog>>> getLogsForHabit(String habitId);
 
   Future<Either<Failure, List<HabitLog>>> getAllLogs();
