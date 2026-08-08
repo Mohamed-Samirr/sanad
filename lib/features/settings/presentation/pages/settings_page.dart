@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/section_card.dart';
+import '../../../../core/widgets/section_card.dart';
 import '../../../habits/habits_routes.dart';
+import '../cubit/settings_cubit.dart';
+import '../cubit/settings_state.dart';
 
 /// The settings shell.
-///
-/// Only the parts that have something to manage exist so far. Theme, locale,
-/// reminders, the app lock and data export arrive with their own tasks rather
-/// than sitting here as dead switches.
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
@@ -20,7 +20,20 @@ class SettingsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
-      body: ListView(
+      body: BlocConsumer<SettingsCubit, SettingsState>(
+        listenWhen: (previous, current) => previous.error != current.error || previous.isLoading != current.isLoading,
+        listener: (context, state) {
+          if (state.error != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.error!), backgroundColor: context.palette.caution),
+            );
+          }
+          // A loading overlay could be handled here or globally
+        },
+        builder: (context, state) {
+          return Stack(
+            children: [
+              ListView(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.lg,
           AppSpacing.sm,
@@ -40,10 +53,88 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
+          SectionCard(
+            title: 'Privacy & Data',
+            icon: Icons.security_rounded,
+            child: Column(
+              children: [
+                _SettingsRow(
+                  icon: Icons.lock_outline_rounded,
+                  label: 'App Lock (PIN & Biometrics)',
+                  description: 'Secure your app with a PIN or fingerprint',
+                  onTap: () {
+                    // TODO: Navigate to App Lock setup
+                  },
+                ),
+                const Divider(),
+                _SettingsRow(
+                  icon: Icons.upload_file_rounded,
+                  label: 'Export Data',
+                  description: 'Backup your data to a secure file',
+                  onTap: () {
+                    context.read<SettingsCubit>().exportData();
+                  },
+                ),
+                const Divider(),
+                _SettingsRow(
+                  icon: Icons.download_rounded,
+                  label: 'Import Data',
+                  description: 'Restore your data from a previous backup',
+                  onTap: () {
+                    context.read<SettingsCubit>().importData();
+                  },
+                ),
+                const Divider(),
+                _SettingsRow(
+                  icon: Icons.delete_forever_rounded,
+                  label: 'Wipe Data',
+                  description: 'Permanently delete all your data',
+                  isDestructive: true,
+                  onTap: () => _confirmWipeData(context),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
           const _Disclaimer(),
         ],
       ),
+              if (state.isLoading)
+                const Positioned.fill(
+                  child: ColoredBox(
+                    color: Colors.black26,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
     );
+  }
+
+  Future<void> _confirmWipeData(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Wipe All Data?'),
+        content: const Text('This action is permanent and cannot be undone. Are you absolutely sure?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text('Wipe Data', style: TextStyle(color: ctx.palette.caution)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      context.read<SettingsCubit>().wipeData();
+    }
   }
 }
 
@@ -75,12 +166,14 @@ class _SettingsRow extends StatelessWidget {
     required this.label,
     required this.description,
     required this.onTap,
+    this.isDestructive = false,
   });
 
   final IconData icon;
   final String label;
   final String description;
   final VoidCallback onTap;
+  final bool isDestructive;
 
   @override
   Widget build(BuildContext context) {
@@ -95,18 +188,20 @@ class _SettingsRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: palette.textSecondary),
+            Icon(icon, size: 20, color: isDestructive ? palette.caution : palette.textSecondary),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: text.titleSmall),
+                  Text(label, style: text.titleSmall?.copyWith(
+                    color: isDestructive ? palette.caution : null,
+                  )),
                   const SizedBox(height: 2),
                   Text(
                     description,
                     style: text.bodySmall?.copyWith(
-                      color: palette.textSecondary,
+                      color: isDestructive ? palette.caution.withValues(alpha: 0.8) : palette.textSecondary,
                     ),
                   ),
                 ],
@@ -114,7 +209,7 @@ class _SettingsRow extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: palette.textMuted,
+              color: isDestructive ? palette.caution : palette.textMuted,
             ),
           ],
         ),

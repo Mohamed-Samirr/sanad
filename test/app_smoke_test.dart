@@ -8,6 +8,9 @@ import 'package:sanad/core/theme/app_colors.dart';
 import 'package:sanad/core/theme/app_palette.dart';
 import 'package:sanad/core/theme/app_theme.dart';
 import 'package:sanad/features/habits/habits_injection.dart';
+import 'package:sanad/features/journal/journal_injection.dart';
+import 'package:sanad/features/urge/urge_injection.dart';
+import 'package:sanad/features/support/support_injection.dart';
 import 'package:sanad/features/habits/presentation/widgets/habit_check_button.dart';
 
 /// Cold-start smoke test. `Hive.initFlutter` needs the path_provider channel,
@@ -26,6 +29,9 @@ void main() {
       boxDir = await Directory.systemTemp.createTemp('sanad_test_');
       Hive.init(boxDir.path);
       await initHabitsFeature();
+      await initJournalFeature();
+      await initUrgeFeature();
+      await initSupportFeature();
     });
 
     tearDown(() async {
@@ -39,7 +45,7 @@ void main() {
     });
 
     testWidgets('lands on the habits list empty state', (tester) async {
-      await tester.pumpWidget(const SanadApp());
+      await tester.pumpWidget(const SanadApp(initialRoute: '/habits'));
       await tester.pumpAndSettle();
 
       expect(find.text('No habits yet'), findsOneWidget);
@@ -49,7 +55,7 @@ void main() {
 
     testWidgets('resolves colour and type from the theme, not constants',
         (tester) async {
-      await tester.pumpWidget(const SanadApp());
+      await tester.pumpWidget(const SanadApp(initialRoute: '/habits'));
       await tester.pumpAndSettle();
 
       final context = tester.element(find.text('No habits yet'));
@@ -58,10 +64,10 @@ void main() {
     });
 
     testWidgets('the add button opens the habit form', (tester) async {
-      await tester.pumpWidget(const SanadApp());
+      await tester.pumpWidget(const SanadApp(initialRoute: '/habits'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tap(find.byIcon(Icons.add_rounded));
       await tester.pumpAndSettle();
 
       // Regression: /habit-form had no generator, so this threw
@@ -73,10 +79,10 @@ void main() {
 
     testWidgets('the form refuses an unnamed habit instead of closing',
         (tester) async {
-      await tester.pumpWidget(const SanadApp());
+      await tester.pumpWidget(const SanadApp(initialRoute: '/habits'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tap(find.byIcon(Icons.add_rounded));
       await tester.pumpAndSettle();
 
       // The app-bar action rather than the button at the foot of the form,
@@ -105,10 +111,10 @@ void main() {
     testWidgets('a habit created in the form appears on the list',
         skip: true,
         (tester) async {
-      await tester.pumpWidget(const SanadApp());
+      await tester.pumpWidget(const SanadApp(initialRoute: '/habits'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tap(find.byIcon(Icons.add_rounded));
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(TextField).first, 'Morning walk');
@@ -135,7 +141,7 @@ void main() {
       await tester.pumpWidget(
         const MediaQuery(
           data: MediaQueryData(textScaler: TextScaler.linear(1.3)),
-          child: SanadApp(),
+          child: SanadApp(initialRoute: '/habits'),
         ),
       );
       await tester.pumpAndSettle();

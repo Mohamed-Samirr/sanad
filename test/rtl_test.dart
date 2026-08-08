@@ -6,6 +6,9 @@ import 'package:hive/hive.dart';
 import 'package:sanad/app.dart';
 import 'package:sanad/core/l10n/app_localizations_ar.dart';
 import 'package:sanad/features/habits/habits_injection.dart';
+import 'package:sanad/features/journal/journal_injection.dart';
+import 'package:sanad/features/urge/urge_injection.dart';
+import 'package:sanad/features/support/support_injection.dart';
 
 /// Arabic is the default locale and the app has to work right-to-left, so
 /// these check the things that silently break in RTL: the reading direction
@@ -19,6 +22,9 @@ void main() {
     boxDir = await Directory.systemTemp.createTemp('sanad_rtl_');
     Hive.init(boxDir.path);
     await initHabitsFeature();
+    await initJournalFeature();
+    await initUrgeFeature();
+    await initSupportFeature();
   });
 
   tearDown(() async {
@@ -37,7 +43,7 @@ void main() {
     await tester.pumpWidget(
       MediaQuery(
         data: MediaQueryData(textScaler: TextScaler.linear(textScale)),
-        child: const SanadApp(locale: Locale('ar')),
+        child: const SanadApp(locale: Locale('ar'), initialRoute: '/habits'),
       ),
     );
     await tester.pumpAndSettle();
@@ -63,7 +69,7 @@ void main() {
   testWidgets('an unsupported device locale falls back to Arabic, not English',
       (tester) async {
     await tester.pumpWidget(
-      const SanadApp(locale: Locale('fr')),
+      const SanadApp(locale: Locale('fr'), initialRoute: '/habits'),
     );
     await tester.pumpAndSettle();
 
@@ -72,7 +78,7 @@ void main() {
   });
 
   testWidgets('a supported device locale is honoured', (tester) async {
-    await tester.pumpWidget(const SanadApp(locale: Locale('en')));
+    await tester.pumpWidget(const SanadApp(locale: Locale('en'), initialRoute: '/habits'));
     await tester.pumpAndSettle();
 
     final context = tester.element(find.byType(Scaffold).first);
@@ -92,7 +98,7 @@ void main() {
       (tester) async {
     await pumpApp(tester, textScale: 1.3);
 
-    await tester.tap(find.byType(FloatingActionButton));
+    await tester.tap(find.byIcon(Icons.add_rounded));
     await tester.pumpAndSettle();
 
     // Every schedule mode is rendered, since each swaps in a different set of

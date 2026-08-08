@@ -166,6 +166,28 @@ abstract class AppLocalizations {
   String get settingsAboutSection;
   String get disclaimer;
 
+  // ------------------------------------------------------------- onboarding
+  String get onboardingTitle;
+  String get onboardingDefensiveTitle;
+  String get onboardingDefensiveText;
+  String get onboardingOffensiveTitle;
+  String get onboardingOffensiveText;
+  String get onboardingCTA;
+
+  // ------------------------------------------------------------- toolbox
+  String get toolboxTitle;
+  String get noToolsTitle;
+  String get noToolsMessage;
+  String get addTool;
+  String get editToolTitle;
+  String get newToolTitle;
+  String get toolNameHint;
+  String get toolDescriptionHint;
+  String get toolDurationLabel;
+  String get toolCategoryLabel;
+  String get deleteTool;
+  String get deleteToolMessage;
+
   // ------------------------------------------------------------- semantics
   String get checkDoneToday;
   String get checkMarkDone;
@@ -181,6 +203,34 @@ abstract class AppLocalizations {
   String get failureUnexpected;
   String get reminderPermissionDenied;
   String get reminderPermissionUnavailable;
+
+  // ------------------------------------------------------------- journal
+  String get journalTitle;
+  String get noJournalEntriesTitle;
+  String get noJournalEntriesMessage;
+  String get addJournalEntry;
+  String get editJournalEntry;
+  String get journalMood;
+  String get journalEnergy;
+  String get journalSleepQuality;
+  String get journalStress;
+  String get journalFeltNote;
+  String get journalNeededNote;
+  String get journalThoughtNote;
+  String get journalTags;
+
+  // ------------------------------------------------------------- support
+  String get supportTitle;
+  String get noSupportContactsTitle;
+  String get noSupportContactsMessage;
+  String get addSupportContact;
+  String get editSupportContact;
+  String get contactName;
+  String get contactPhone;
+  String get contactMessageTemplate;
+  String get contactMessageHint;
+  String get deleteContact;
+  String get deleteContactMessage;
 
   /// Turns a [Failure] into a sentence in this locale.
   ///

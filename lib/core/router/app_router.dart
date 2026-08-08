@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 
 import '../../features/habits/habits_routes.dart';
+import '../../features/onboarding/onboarding_routes.dart';
 import '../../features/settings/settings_routes.dart';
+import '../../features/toolbox/toolbox_routes.dart';
+import '../../features/urge/urge_routes.dart';
+import '../../features/journal/journal_routes.dart';
+import '../../features/support/support_routes.dart';
 
-/// Asks each feature's router in turn.
-///
-/// Features keep owning their own routes — this only decides who is asked, so
-/// adding a feature means adding one line here rather than moving its routes
-/// into a central table.
 class AppRouter {
   const AppRouter._();
 
-  static const String initialRoute = HabitsRoutes.list;
-
   static const List<Route<dynamic>? Function(RouteSettings)> _routers = [
+    OnboardingRoutes.onGenerateRoute,
+    UrgeRoutes.onGenerateRoute,
     HabitsRoutes.onGenerateRoute,
+    JournalRoutes.onGenerateRoute,
+    SupportRoutes.onGenerateRoute,
+    ToolboxRoutes.onGenerateRoute,
     SettingsRoutes.onGenerateRoute,
   ];
 

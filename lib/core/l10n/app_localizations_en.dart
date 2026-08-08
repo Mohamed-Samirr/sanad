@@ -281,12 +281,64 @@ class AppLocalizationsEn extends AppLocalizations {
       'Restore one, or delete it and its history.';
   @override
   String get settingsAboutSection => 'About this app';
+
   @override
   String get disclaimer =>
-      'Sanad is a self-tracking tool. It is not medical treatment and it does '
-      'not replace a doctor or a therapist. If things feel severe or unsafe, '
-      'talking to a professional is the right step, and reaching for it is '
-      'not a failure of anything you have built here.';
+      'Sanad is a self-tracking tool. It is not medical treatment and it does not replace a doctor or a therapist. If things feel severe or unsafe, talking to a professional is the right step, and reaching for it is not a failure of anything you have built here.';
+
+  @override
+  String get onboardingTitle => 'Welcome to Sanad';
+
+  @override
+  String get onboardingDefensiveTitle => 'Defend';
+
+  @override
+  String get onboardingDefensiveText => 'Log an urge the moment it hits. Delay it, fight it with your tools, or reach out.';
+
+  @override
+  String get onboardingOffensiveTitle => 'Build';
+
+  @override
+  String get onboardingOffensiveText => 'Track the constructive habits you want to build and see your progress over time.';
+
+  @override
+  String get onboardingCTA => 'Get Started';
+
+  @override
+  String get toolboxTitle => 'Toolbox';
+
+  @override
+  String get noToolsTitle => 'Your toolbox is empty';
+
+  @override
+  String get noToolsMessage => 'Add things that help you fight the urge, like a breathing exercise, calling a friend, or taking a walk.';
+
+  @override
+  String get addTool => 'Add tool';
+
+  @override
+  String get editToolTitle => 'Edit tool';
+
+  @override
+  String get newToolTitle => 'New tool';
+
+  @override
+  String get toolNameHint => 'Name your tool';
+
+  @override
+  String get toolDescriptionHint => 'How do you do it?';
+
+  @override
+  String get toolDurationLabel => 'Duration (minutes)';
+
+  @override
+  String get toolCategoryLabel => 'Category';
+
+  @override
+  String get deleteTool => 'Delete tool';
+
+  @override
+  String get deleteToolMessage => 'Remove this tool from your toolbox?';
 
   @override
   String get checkDoneToday => 'Done today';
@@ -318,6 +370,56 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get reminderPermissionUnavailable =>
       'Could not reach the notification settings.';
+
+  @override
+  String get journalTitle => 'Journal';
+  @override
+  String get noJournalEntriesTitle => 'No journal entries';
+  @override
+  String get noJournalEntriesMessage => 'Write your first entry to reflect on how you\'re doing.';
+  @override
+  String get addJournalEntry => 'Add entry';
+  @override
+  String get editJournalEntry => 'Edit entry';
+  @override
+  String get journalMood => 'Mood';
+  @override
+  String get journalEnergy => 'Energy';
+  @override
+  String get journalSleepQuality => 'Sleep Quality';
+  @override
+  String get journalStress => 'Stress';
+  @override
+  String get journalFeltNote => 'What did you feel?';
+  @override
+  String get journalNeededNote => 'What did you need?';
+  @override
+  String get journalThoughtNote => 'What were your thoughts?';
+  @override
+  String get journalTags => 'Tags (comma separated)';
+
+  @override
+  String get supportTitle => 'Support';
+  @override
+  String get noSupportContactsTitle => 'No support contacts';
+  @override
+  String get noSupportContactsMessage => 'Add people you can rely on when things get tough.';
+  @override
+  String get addSupportContact => 'Add contact';
+  @override
+  String get editSupportContact => 'Edit contact';
+  @override
+  String get contactName => 'Name';
+  @override
+  String get contactPhone => 'Phone number';
+  @override
+  String get contactMessageTemplate => 'Message template (optional)';
+  @override
+  String get contactMessageHint => 'I\'m having a hard time, can we talk?';
+  @override
+  String get deleteContact => 'Delete contact';
+  @override
+  String get deleteContactMessage => 'Remove this contact?';
 
   @override
   List<String> get monthNames => const [

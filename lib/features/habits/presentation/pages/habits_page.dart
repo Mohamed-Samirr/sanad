@@ -35,6 +35,7 @@ class HabitsPage extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'add_habit_fab',
         onPressed: () => Navigator.of(context).pushNamed('/habit-form'),
         tooltip: l10n.addHabit,
         child: const Icon(Icons.add_rounded),

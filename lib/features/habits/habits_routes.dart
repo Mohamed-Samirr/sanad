@@ -7,7 +7,8 @@ import 'presentation/cubit/habits_cubit.dart';
 import 'presentation/pages/archived_habits_page.dart';
 import 'presentation/pages/habit_detail_page.dart';
 import 'presentation/pages/habit_form_page.dart';
-import 'presentation/pages/habits_page.dart';
+
+import '../../core/widgets/main_layout.dart';
 
 /// Plug these into whatever router the app uses.
 class HabitsRoutes {
@@ -26,7 +27,7 @@ class HabitsRoutes {
             create: (_) => sl<HabitsCubit>()
               ..load()
               ..listenToChanges(),
-            child: const HabitsPage(),
+            child: const MainLayout(),
           ),
         );
       case detail:

@@ -14,12 +14,19 @@ dependencies:
   get_it: ^7.7.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  fl_chart: ^0.69.0
+  fl_chart: ^1.2.0
   uuid: ^4.4.2
   flutter_local_notifications: ^20.1.0
   timezone: ^0.10.1
   flutter_localizations:
     sdk: flutter
+  equatable: ^2.1.0
+  url_launcher: ^6.3.2
+  flutter_secure_storage: ^10.3.1
+  local_auth: ^3.0.1
+  file_picker: ^11.0.3
+  share_plus: ^12.0.2
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
@@ -28,6 +35,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
 
   # Bundled, not fetched. google_fonts resolves over the network at runtime,
   # which this app never does. Both faces are OFL — licences sit beside them.

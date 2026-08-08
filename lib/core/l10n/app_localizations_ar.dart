@@ -277,11 +277,64 @@ class AppLocalizationsAr extends AppLocalizations {
       'استرجع واحدة، أو احذفها هي وسجلها.';
   @override
   String get settingsAboutSection => 'عن التطبيق';
+
   @override
   String get disclaimer =>
-      'سند أداة للمتابعة الذاتية. هو ليس علاجًا طبيًا ولا يغني عن طبيب أو '
-      'معالج. إن كان الأمر شديدًا أو غير آمن، فالحديث مع مختص هو الخطوة '
-      'الصحيحة، واللجوء إليه ليس فشلًا في أي شيء بنيته هنا.';
+      'سند أداة للمتابعة الذاتية. هو ليس علاجًا طبيًا ولا يغني عن طبيب أو معالج. إن كان الأمر شديدًا أو غير آمن، فالحديث مع مختص هو الخطوة الصحيحة، واللجوء إليه ليس فشلًا في أي شيء بنيته هنا.';
+
+  @override
+  String get onboardingTitle => 'مرحباً بك في سند';
+
+  @override
+  String get onboardingDefensiveTitle => 'دافع';
+
+  @override
+  String get onboardingDefensiveText => 'سجل الرغبة بمجرد شعورك بها. أجلها، قاومها بأدواتك، أو اطلب الدعم.';
+
+  @override
+  String get onboardingOffensiveTitle => 'ابنِ';
+
+  @override
+  String get onboardingOffensiveText => 'تتبع العادات الإيجابية التي تود بناءها وشاهد تقدمك بمرور الوقت.';
+
+  @override
+  String get onboardingCTA => 'ابدأ الآن';
+
+  @override
+  String get toolboxTitle => 'صندوق الأدوات';
+
+  @override
+  String get noToolsTitle => 'صندوقك فارغ';
+
+  @override
+  String get noToolsMessage => 'أضف ما يساعدك على مقاومة الرغبة، كتمرين تنفس، أو الاتصال بصديق، أو المشي.';
+
+  @override
+  String get addTool => 'إضافة أداة';
+
+  @override
+  String get editToolTitle => 'تعديل الأداة';
+
+  @override
+  String get newToolTitle => 'أداة جديدة';
+
+  @override
+  String get toolNameHint => 'اسم الأداة';
+
+  @override
+  String get toolDescriptionHint => 'كيف تنفذها؟';
+
+  @override
+  String get toolDurationLabel => 'المدة (بالدقائق)';
+
+  @override
+  String get toolCategoryLabel => 'التصنيف';
+
+  @override
+  String get deleteTool => 'حذف الأداة';
+
+  @override
+  String get deleteToolMessage => 'إزالة هذه الأداة من الصندوق؟';
 
   @override
   String get checkDoneToday => 'منجَز اليوم';
@@ -309,8 +362,57 @@ class AppLocalizationsAr extends AppLocalizations {
       'التذكيرات تحتاج إذن الإشعارات. تقدر تفعّله من إعدادات جهازك وتضبطه '
       'مرة أخرى.';
   @override
-  String get reminderPermissionUnavailable =>
-      'تعذّر الوصول إلى إعدادات الإشعارات.';
+  String get reminderPermissionUnavailable => 'تعذر الوصول إلى إعدادات الإشعارات.';
+
+  @override
+  String get journalTitle => 'اليوميات';
+  @override
+  String get noJournalEntriesTitle => 'لا توجد يوميات';
+  @override
+  String get noJournalEntriesMessage => 'اكتب أول تدوينة لك لتتأمل في مشاعرك وحالتك.';
+  @override
+  String get addJournalEntry => 'إضافة تدوينة';
+  @override
+  String get editJournalEntry => 'تعديل التدوينة';
+  @override
+  String get journalMood => 'المزاج';
+  @override
+  String get journalEnergy => 'الطاقة';
+  @override
+  String get journalSleepQuality => 'جودة النوم';
+  @override
+  String get journalStress => 'التوتر';
+  @override
+  String get journalFeltNote => 'بماذا شعرت؟';
+  @override
+  String get journalNeededNote => 'ماذا احتجت؟';
+  @override
+  String get journalThoughtNote => 'بماذا فكرت؟';
+  @override
+  String get journalTags => 'العلامات (مفصولة بفاصلة)';
+
+  @override
+  String get supportTitle => 'الدعم';
+  @override
+  String get noSupportContactsTitle => 'لا توجد جهات اتصال';
+  @override
+  String get noSupportContactsMessage => 'أضف أشخاصاً يمكنك الاعتماد عليهم في الأوقات الصعبة.';
+  @override
+  String get addSupportContact => 'إضافة جهة اتصال';
+  @override
+  String get editSupportContact => 'تعديل جهة الاتصال';
+  @override
+  String get contactName => 'الاسم';
+  @override
+  String get contactPhone => 'رقم الهاتف';
+  @override
+  String get contactMessageTemplate => 'قالب الرسالة (اختياري)';
+  @override
+  String get contactMessageHint => 'أنا أمر بوقت صعب، هل يمكننا التحدث؟';
+  @override
+  String get deleteContact => 'حذف جهة الاتصال';
+  @override
+  String get deleteContactMessage => 'هل تريد إزالة جهة الاتصال هذه؟';
 
   @override
   List<String> get monthNames => const [
