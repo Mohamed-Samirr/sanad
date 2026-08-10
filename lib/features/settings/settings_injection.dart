@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../core/constants/hive_constants.dart';
 import 'data/models/app_settings_model.dart';
 import 'data/repositories/settings_repository_impl.dart';
 import 'domain/repositories/settings_repository.dart';
@@ -14,7 +15,9 @@ import 'presentation/cubit/settings_cubit.dart';
 final sl = GetIt.instance;
 
 Future<void> initSettingsFeature() async {
-  Hive.registerAdapter(AppSettingsAdapter());
+  if (!Hive.isAdapterRegistered(HiveTypeIds.appSettings)) {
+    Hive.registerAdapter(AppSettingsAdapter());
+  }
 
   // Repositories
   sl.registerLazySingleton<SettingsRepository>(() => SettingsRepositoryImpl());

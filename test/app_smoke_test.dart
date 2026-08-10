@@ -7,6 +7,7 @@ import 'package:sanad/main.dart';
 import 'package:sanad/core/theme/app_colors.dart';
 import 'package:sanad/core/theme/app_palette.dart';
 import 'package:sanad/core/theme/app_theme.dart';
+import 'package:sanad/features/settings/settings_injection.dart' hide sl;
 import 'package:sanad/features/habits/habits_injection.dart';
 import 'package:sanad/features/journal/journal_injection.dart';
 import 'package:sanad/features/urge/urge_injection.dart';
@@ -28,6 +29,7 @@ void main() {
       await sl.reset();
       boxDir = await Directory.systemTemp.createTemp('sanad_test_');
       Hive.init(boxDir.path);
+      await initSettingsFeature();
       await initHabitsFeature();
       await initJournalFeature();
       await initUrgeFeature();

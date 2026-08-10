@@ -185,6 +185,7 @@ class AppTheme {
           minimumSize: const Size(48, 48),
         ),
       ),
+      tooltipTheme: const TooltipThemeData(),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: palette.accent,
         circularTrackColor: palette.surfaceAlt,
