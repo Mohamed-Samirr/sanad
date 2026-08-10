@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
-import 'package:sanad/app.dart';
+import 'package:sanad/main.dart';
 import 'package:sanad/core/theme/app_colors.dart';
 import 'package:sanad/core/theme/app_palette.dart';
 import 'package:sanad/core/theme/app_theme.dart';

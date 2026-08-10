@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
-import 'package:sanad/app.dart';
+import 'package:sanad/main.dart';
 import 'package:sanad/core/l10n/app_localizations_ar.dart';
 import 'package:sanad/features/habits/habits_injection.dart';
 import 'package:sanad/features/journal/journal_injection.dart';
