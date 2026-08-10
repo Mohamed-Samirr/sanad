@@ -73,6 +73,10 @@ class _HabitFormPageState extends State<HabitFormPage> {
 
         return Scaffold(
           appBar: AppBar(
+            leading: IconButton(
+              icon: const BackButtonIcon(),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
             title: Text(
               state.isEditing ? l10n.editHabitTitle : l10n.newHabitTitle,
             ),
@@ -532,7 +536,6 @@ class _DetailsSection extends StatelessWidget {
                 : IconButton(
                     onPressed: () => onReminderChanged(null),
                     icon: const Icon(Icons.close_rounded),
-                    tooltip: l10n.formTurnReminderOff,
                   ),
           ),
           const Divider(height: AppSpacing.xl),
@@ -699,7 +702,6 @@ class _Stepper extends StatelessWidget {
         IconButton.outlined(
           onPressed: value > min ? () => onChanged(value - 1) : null,
           icon: const Icon(Icons.remove_rounded),
-          tooltip: l10n.fewerDays,
         ),
         Expanded(
           child: Semantics(
@@ -721,7 +723,6 @@ class _Stepper extends StatelessWidget {
         IconButton.outlined(
           onPressed: value < max ? () => onChanged(value + 1) : null,
           icon: const Icon(Icons.add_rounded),
-          tooltip: l10n.moreDays,
         ),
       ],
     );

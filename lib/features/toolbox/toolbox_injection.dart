@@ -11,7 +11,9 @@ import 'domain/usecases/save_tool_action.dart';
 final sl = GetIt.instance;
 
 Future<void> initToolboxFeature() async {
-  Hive.registerAdapter(ToolActionAdapter());
+  if (!Hive.isAdapterRegistered(13)) {
+    Hive.registerAdapter(ToolActionAdapter());
+  }
 
   // Repositories
   sl.registerLazySingleton<ToolboxRepository>(() => ToolboxRepositoryImpl());

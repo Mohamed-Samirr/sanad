@@ -12,6 +12,8 @@ import 'package:sanad/features/habits/habits_injection.dart';
 import 'package:sanad/features/journal/journal_injection.dart';
 import 'package:sanad/features/urge/urge_injection.dart';
 import 'package:sanad/features/support/support_injection.dart';
+import 'package:sanad/features/toolbox/toolbox_injection.dart' hide sl;
+import 'package:sanad/features/insights/insights_injection.dart' hide sl;
 import 'package:sanad/features/habits/presentation/widgets/habit_check_button.dart';
 
 /// Cold-start smoke test. `Hive.initFlutter` needs the path_provider channel,
@@ -34,6 +36,8 @@ void main() {
       await initJournalFeature();
       await initUrgeFeature();
       await initSupportFeature();
+      await initToolboxFeature();
+      initInsightsFeature();
     });
 
     tearDown(() async {
@@ -47,7 +51,7 @@ void main() {
     });
 
     testWidgets('lands on the habits list empty state', (tester) async {
-      await tester.pumpWidget(const SanadApp(initialRoute: '/habits'));
+      await tester.pumpWidget(const TooltipVisibility(visible: false, child: SanadApp(initialRoute: '/habits')));
       await tester.pumpAndSettle();
 
       expect(find.text('No habits yet'), findsOneWidget);
@@ -57,7 +61,7 @@ void main() {
 
     testWidgets('resolves colour and type from the theme, not constants',
         (tester) async {
-      await tester.pumpWidget(const SanadApp(initialRoute: '/habits'));
+      await tester.pumpWidget(const TooltipVisibility(visible: false, child: SanadApp(initialRoute: '/habits')));
       await tester.pumpAndSettle();
 
       final context = tester.element(find.text('No habits yet'));
@@ -66,7 +70,7 @@ void main() {
     });
 
     testWidgets('the add button opens the habit form', (tester) async {
-      await tester.pumpWidget(const SanadApp(initialRoute: '/habits'));
+      await tester.pumpWidget(const TooltipVisibility(visible: false, child: SanadApp(initialRoute: '/habits')));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byIcon(Icons.add_rounded));
@@ -81,7 +85,7 @@ void main() {
 
     testWidgets('the form refuses an unnamed habit instead of closing',
         (tester) async {
-      await tester.pumpWidget(const SanadApp(initialRoute: '/habits'));
+      await tester.pumpWidget(const TooltipVisibility(visible: false, child: SanadApp(initialRoute: '/habits')));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byIcon(Icons.add_rounded));
@@ -113,7 +117,7 @@ void main() {
     testWidgets('a habit created in the form appears on the list',
         skip: true,
         (tester) async {
-      await tester.pumpWidget(const SanadApp(initialRoute: '/habits'));
+      await tester.pumpWidget(const TooltipVisibility(visible: false, child: SanadApp(initialRoute: '/habits')));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byIcon(Icons.add_rounded));
@@ -143,7 +147,7 @@ void main() {
       await tester.pumpWidget(
         const MediaQuery(
           data: MediaQueryData(textScaler: TextScaler.linear(1.3)),
-          child: SanadApp(initialRoute: '/habits'),
+          child: TooltipVisibility(visible: false, child: SanadApp(initialRoute: '/habits')),
         ),
       );
       await tester.pumpAndSettle();

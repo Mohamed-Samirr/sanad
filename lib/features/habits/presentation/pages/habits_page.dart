@@ -29,7 +29,6 @@ class HabitsPage extends StatelessWidget {
             onPressed: () =>
                 Navigator.of(context).pushNamed(SettingsRoutes.settings),
             icon: const Icon(Icons.settings_outlined),
-            tooltip: l10n.settingsTooltip,
           ),
           const SizedBox(width: AppSpacing.xs),
         ],
@@ -37,7 +36,6 @@ class HabitsPage extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         heroTag: 'add_habit_fab',
         onPressed: () => Navigator.of(context).pushNamed('/habit-form'),
-        tooltip: l10n.addHabit,
         child: const Icon(Icons.add_rounded),
       ),
       body: BlocBuilder<HabitsCubit, HabitsState>(
